@@ -34,14 +34,27 @@ const all=()=>SEED.map((e,i)=>Object.assign({id:"s"+i},e)).concat(S.items.map(e=
 function vExplorar(){
  if(zona!=="all"&&!S.visited.includes(zona)){S.visited.push(zona);S.pts+=2;save();head()}
  const secs=[["all","Todo"]].concat(SECS.map(s=>[s.id,s.n]));
- $("#view").innerHTML=`<input type="search" id="q" placeholder="Buscar: coche, misión, dinero…" value="${esc(q)}">
+ $("#view").innerHTML=`${mapa()}<input type="search" id="q" placeholder="Buscar: coche, misión, dinero…" value="${esc(q)}">
  <div class="chips" id="cs">${secs.map(c=>`<button data-s="${c[0]}" class="${sec===c[0]?"on":""}">${c[1]}</button>`).join("")}</div>
  <select id="zs"><option value="all">Toda la isla</option>${ZONAS.map(z=>`<option value="${z.id}" ${zona===z.id?"selected":""}>${z.n}</option>`).join("")}</select>
  <div id="zinfo"></div><div id="lista"></div>${aff()}`;
  document.querySelectorAll("#cs button").forEach(b=>b.onclick=()=>{sec=b.dataset.s;render()});
  $("#zs").onchange=e=>{zona=e.target.value;render()};
+ document.querySelectorAll(".pin").forEach(p=>p.onclick=()=>{zona=zona===p.dataset.z?"all":p.dataset.z;render();$("#zinfo").scrollIntoView({behavior:"smooth",block:"start"})});
  $("#q").oninput=e=>{q=e.target.value.trim().toLowerCase();lista()};
  lista();
+}
+// Mapa ESQUEMÁTICO (no oficial): posiciones aproximadas según descripciones públicas de las regiones.
+const PINS=[["kalaga",175,80],["port",70,125],["ambrosia",200,215],["vice",318,350],["hamlet",282,318],["grass",225,405],["keys",235,490]];
+function mapa(){
+ const pins=PINS.map(p=>{const n=zonN(p[0]);return `<g class="pin ${zona===p[0]?"on":""}" data-z="${p[0]}" role="button" aria-label="${n}"><circle class="halo" cx="${p[1]}" cy="${p[2]}" r="22"/><circle class="dot" cx="${p[1]}" cy="${p[2]}" r="7"/><text x="${p[1]+12}" y="${p[2]+5}">${n}</text></g>`}).join("");
+ return `<div class="card mapbox"><svg viewBox="0 0 400 530" role="img" aria-label="Mapa esquemático de Leonida">
+ <defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1050"/><stop offset="1" stop-color="#0b3a5c"/></linearGradient>
+ <linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1c66"/><stop offset="1" stop-color="#7a2a8c"/></linearGradient></defs>
+ <rect width="400" height="530" fill="url(#sea)"/>
+ <path d="M20 60 L330 60 L352 200 L342 330 L312 420 L280 442 L232 432 L202 362 L172 302 L142 232 L110 162 L40 132 Z" fill="url(#land)" stroke="#ff3d9a" stroke-width="2.5" stroke-linejoin="round"/>
+ <path d="M262 470 q22 14 44 6 M214 486 q18 12 36 4 M170 498 q14 8 28 2" stroke="#ff9a3d" stroke-width="7" stroke-linecap="round" fill="none"/>
+ ${pins}</svg><p class="mut maphint">Mapa esquemático no oficial. Toca una zona para filtrar.</p></div>`;
 }
 function lista(){
  const z=ZONAS.find(z=>z.id===zona);
